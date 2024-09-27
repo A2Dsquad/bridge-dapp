@@ -1,9 +1,9 @@
 import { http, createConfig } from "wagmi";
-import { mainnet } from "wagmi/chains";
+import { mainnet, sepolia } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 
 export const config = createConfig({
-  chains: [mainnet],
+  chains: [mainnet, sepolia],
   connectors: [
     injected(),
     coinbaseWallet(),
@@ -11,6 +11,7 @@ export const config = createConfig({
   ],
   transports: {
     [mainnet.id]: http(),
+    [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
   },
 });
 

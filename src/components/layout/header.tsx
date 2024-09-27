@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount, useDisconnect } from "wagmi";
 
-import { IconChevronDown, IconLink, IconLogo, IconWallet } from "@/components/icons";
+import { IconChevronDown, IconCopy, IconLink, IconLogo, IconWallet } from "@/components/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,11 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { shortAddress } from "@/lib/utils";
+import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
 function Header() {
   const { address, isConnected } = useAccount();
   const { open } = useWeb3Modal();
   const { disconnect } = useDisconnect();
+  const { copyToClipboard } = useCopyToClipboard();
 
   return (
     <header className="text-white bg-black/30">
@@ -55,6 +57,13 @@ function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[180px] bg-[#262626]/70 mt-4 border-none p-0 rounded-[8px]">
+                  <DropdownMenuItem
+                    onClick={() => address && copyToClipboard(address)}
+                    className="py-3 px-4 backdrop-blur-[15px] flex items-center gap-2 rounded-none hover:cursor-pointer"
+                  >
+                    <IconCopy className="w-5 h-5 text-foreground" />
+                    <span className="text-xs text-foreground">Copy Address</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => disconnect()}
                     className="py-3 px-4 backdrop-blur-[15px] flex items-center gap-2 rounded-none hover:cursor-pointer"

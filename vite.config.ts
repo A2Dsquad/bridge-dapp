@@ -43,7 +43,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://tax-farm-be-dev.nysm.work/api",
+        target: "https://test.lotusfarm.online/api",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },

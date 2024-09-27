@@ -1,6 +1,7 @@
 import { useState } from "react";
 import SegmentedControl from "../ui/segmented-control";
 import { TransferForm } from "./transfer-form";
+import { TransferHistory } from "./transfer-history";
 
 type Tab = "transfer" | "history";
 
@@ -19,6 +20,7 @@ export const BridgeForm = () => {
       />
 
       {tab === "transfer" && <TransferForm />}
+      {tab === "history" && <TransferHistory />}
     </div>
   );
 };

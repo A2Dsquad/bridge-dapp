@@ -11,34 +11,58 @@ import {
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useWriteContract } from "wagmi";
 import * as z from "zod";
 import { Button as MovingBorder } from "../aceternity/moving-border";
 import { IconAptos, IconArrow, IconEthereum } from "../icons";
 import { Input } from "../ui/input";
+import { useMinterControllerCreateOrder } from "@/services/queries";
+import { ZKBridgeAbi, ZKBridgeAddresses } from "@/smart-contracts";
+import { parseEther } from "viem";
 
 const formSchema = z.object({
-  amount: z.coerce
-    .number({ message: "Amount must be a number" })
-    .min(1, "Amount is required")
-    .optional(),
-  recipient_address: z.string().min(1, "Recipient address is required"),
+  amount: z.coerce.number({ message: "Amount must be a number" }).gt(0, "Amount is required"),
+  recipient: z.string().min(1, "Recipient address is required"),
 });
 
 export function TransferForm() {
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const { data: ethBalance } = useBalance({ address });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: 0,
-      recipient_address: "",
+      recipient: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  const { writeContractAsync, isPending: isWriteContractPending } = useWriteContract();
+  const { mutateAsync: createOrder, isPending: isOrderPending } = useMinterControllerCreateOrder();
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!chainId || !address) return;
+
+    const value = parseEther(values.amount.toString());
+
+    const srcTxHash = await writeContractAsync({
+      abi: ZKBridgeAbi,
+      address: ZKBridgeAddresses[chainId],
+      functionName: "transferETH",
+      args: [1n, address],
+      value,
+    });
+
+    if (srcTxHash) {
+      await createOrder({
+        data: {
+          recipient: values.recipient,
+          sender: address,
+          sentAmount: values.amount.toString(),
+          srcTxHash,
+        },
+      });
+    }
   }
 
   return (
@@ -93,7 +117,7 @@ export function TransferForm() {
 
               <FormField
                 control={form.control}
-                name="recipient_address"
+                name="recipient"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Recipient Address</FormLabel>
@@ -112,6 +136,7 @@ export function TransferForm() {
                 type="submit"
                 className="w-full bg-primary font-semibold text-[18px] py-4 h-[56px] rounded-[16px]"
                 disabled={!isConnected}
+                loading={isWriteContractPending || isOrderPending}
               >
                 Transfer
               </Button>
