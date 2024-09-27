@@ -10,7 +10,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useAccount, useBalance, useWriteContract } from "wagmi";
 import * as z from "zod";
 import { Button as MovingBorder } from "../aceternity/moving-border";
@@ -19,6 +19,7 @@ import { Input } from "../ui/input";
 import { useMinterControllerCreateOrder } from "@/services/queries";
 import { ZKBridgeAbi, ZKBridgeAddresses } from "@/smart-contracts";
 import { parseEther } from "viem";
+import { delay } from "es-toolkit";
 
 const formSchema = z.object({
   amount: z.coerce.number({ message: "Amount must be a number" }).gt(0, "Amount is required"),
@@ -37,7 +38,14 @@ export function TransferForm() {
     },
   });
 
-  const { writeContractAsync, isPending: isWriteContractPending } = useWriteContract();
+  const values = useWatch({ control: form.control });
+
+  const {
+    writeContractAsync,
+    isPending: isWriteContractPending,
+    isSuccess,
+    reset,
+  } = useWriteContract();
   const { mutateAsync: createOrder, isPending: isOrderPending } = useMinterControllerCreateOrder();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -53,6 +61,8 @@ export function TransferForm() {
       value,
     });
 
+    await delay(15_000);
+    reset();
     if (srcTxHash) {
       await createOrder({
         data: {
@@ -69,7 +79,9 @@ export function TransferForm() {
     <div className="container px-6 z-10 pb-20">
       <div className="bg-background relative max-w-xl mx-auto bg-[rga(18, 18, 17, 1)] border-[1px] border-white/10 rounded-[40px] overflow-hidden">
         <CardHeader className="gap-10 items-center md:items-start">
-          <CardTitle className="text-3xl font-bold text-white">Token</CardTitle>
+          <CardTitle className="text-lg font-bold text-white flex flex-row items-center gap-2">
+            Token: ETH <IconEthereum className="w-5 h-5" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -111,6 +123,10 @@ export function TransferForm() {
                       />
                     </FormControl>
                     <FormMessage />
+                    <FormDescription className="text-gray-400">Fee: 1%</FormDescription>
+                    <FormDescription className="text-gray-400">
+                      Expected amount out: {(values.amount || 0) * 0.99} zkETH
+                    </FormDescription>
                   </FormItem>
                 )}
               />
@@ -138,7 +154,7 @@ export function TransferForm() {
                 disabled={!isConnected}
                 loading={isWriteContractPending || isOrderPending}
               >
-                Transfer
+                {!isWriteContractPending && isSuccess ? "Bridging..." : "Transfer"}
               </Button>
             </form>
           </Form>
