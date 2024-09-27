@@ -5,19 +5,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from "./commentResponse";
-export * from "./createCommentDto";
-export * from "./fileUploadControllerUploadSingleBody";
-export * from "./getManyBaseTaxFarmControllerTaxFarmParams";
-export * from "./mockCreateTaxFarmDto";
-export * from "./taxFarmControllerFindAllParams";
-export * from "./taxFarmControllerGetParams";
-export * from "./taxFarmManyResponse";
-export * from "./taxFarmResponse";
-export * from "./taxFarmStatisticResponse";
-export * from "./upsertTaxFarmOffChainDto";
-export * from "./upsertUserDto";
-export * from "./userResponse";
 export * from "./createMinterOrderDto";
 export * from "./readMinterOrderDto";
 export * from "./readRewardsDto";

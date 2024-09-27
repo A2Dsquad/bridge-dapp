@@ -1,12 +1,12 @@
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
-import { shortAddress } from "@/lib/utils";
+import { cn, shortAddress } from "@/lib/utils";
 import { useMinterControllerFindBySender } from "@/services/queries";
 import { DateTime } from "luxon";
+import { zeroAddress } from "viem";
 import { useAccount } from "wagmi";
 import { IconAptos, IconCheckCircle, IconCopy, IconEthereum } from "../icons";
-import { zeroAddress } from "viem";
 
-export function TransferHistory() {
+export function TransferHistory({ focusedHash }: { focusedHash?: string }) {
   const { isConnected, address = zeroAddress } = useAccount();
   const { copyToClipboard } = useCopyToClipboard();
 
@@ -19,8 +19,15 @@ export function TransferHistory() {
       {histories?.data?.map((history) => (
         <div
           key={history.srcTxHash}
-          className="bg-background relative w-full  max-w-xl mx-auto bg-[rga(18, 18, 17, 1)] border-[1px] border-white/10 rounded-3xl overflow-hidden p-4 flex flex-col gap-2"
+          className="bg-background relative w-full max-w-xl mx-auto bg-[rga(18, 18, 17, 1)] border-[1px] border-white/10 rounded-3xl overflow-hidden p-4 flex flex-col gap-2"
         >
+          <div
+            className={cn(
+              "absolute top-0 bottom-0 left-0 right-0 pointer-events-none bg-white/30",
+              "transition-opacity duration-500",
+              focusedHash === history.srcTxHash ? "opacity-100" : "opacity-0",
+            )}
+          />
           <div className="flex flex-row items-center justify-between">
             <p className="flex flex-row items-center gap-2 text-lg font-medium">
               {Number(history.sentAmount)}

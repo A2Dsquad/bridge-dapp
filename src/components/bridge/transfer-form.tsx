@@ -26,7 +26,9 @@ const formSchema = z.object({
   recipient: z.string().min(1, "Recipient address is required"),
 });
 
-export function TransferForm() {
+export function TransferForm({
+  onSuccess,
+}: { onSuccess: (details: { srcTxHash: string; amount: number }) => void }) {
   const { isConnected, address, chainId } = useAccount();
   const { data: ethBalance } = useBalance({ address });
 
@@ -48,10 +50,10 @@ export function TransferForm() {
   } = useWriteContract();
   const { mutateAsync: createOrder, isPending: isOrderPending } = useMinterControllerCreateOrder();
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit({ amount, recipient }: z.infer<typeof formSchema>) {
     if (!chainId || !address) return;
 
-    const value = parseEther(values.amount.toString());
+    const value = parseEther(amount.toString());
 
     const srcTxHash = await writeContractAsync({
       abi: ZKBridgeAbi,
@@ -66,12 +68,14 @@ export function TransferForm() {
     if (srcTxHash) {
       await createOrder({
         data: {
-          recipient: values.recipient,
+          recipient,
           sender: address,
-          sentAmount: values.amount.toString(),
+          sentAmount: amount.toString(),
           srcTxHash,
         },
       });
+
+      onSuccess({ srcTxHash, amount });
     }
   }
 
@@ -152,9 +156,9 @@ export function TransferForm() {
                 type="submit"
                 className="w-full bg-primary font-semibold text-[18px] py-4 h-[56px] rounded-[16px]"
                 disabled={!isConnected}
-                loading={isWriteContractPending || isOrderPending}
+                loading={isWriteContractPending || isOrderPending || isSuccess}
               >
-                {!isWriteContractPending && isSuccess ? "Bridging..." : "Transfer"}
+                {isSuccess || isOrderPending ? "Bridging..." : "Transfer"}
               </Button>
             </form>
           </Form>

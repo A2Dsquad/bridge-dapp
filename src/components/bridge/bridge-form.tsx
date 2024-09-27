@@ -1,5 +1,9 @@
+import NiceModal from "@ebay/nice-modal-react";
+import { delay } from "es-toolkit";
 import { useState } from "react";
+import { animateScroll } from "react-scroll";
 import SegmentedControl from "../ui/segmented-control";
+import { SuccessModal } from "./success-modal";
 import { TransferForm } from "./transfer-form";
 import { TransferHistory } from "./transfer-history";
 
@@ -7,9 +11,10 @@ type Tab = "transfer" | "history";
 
 export const BridgeForm = () => {
   const [tab, setTab] = useState<Tab>("transfer");
+  const [focusedHash, setFocusedHash] = useState<string>();
 
   return (
-    <div className="flex flex-col items-center gap-6 min-h-screen">
+    <div className="flex flex-col items-center gap-6 min-h-screen" id="ContainerElementID">
       <SegmentedControl
         items={[
           { label: "Transfer", value: "transfer" },
@@ -19,8 +24,26 @@ export const BridgeForm = () => {
         onChange={(value) => setTab(value as Tab)}
       />
 
-      {tab === "transfer" && <TransferForm />}
-      {tab === "history" && <TransferHistory />}
+      {tab === "transfer" && (
+        <TransferForm
+          onSuccess={({ srcTxHash, amount }) =>
+            NiceModal.show(SuccessModal, {
+              onViewInHistory: async () => {
+                NiceModal.remove(SuccessModal);
+                setTab("history");
+                await delay(500);
+                animateScroll.scrollToBottom({ smooth: true, duration: 1500 });
+                await delay(1500);
+                setFocusedHash(srcTxHash);
+                await delay(500);
+                setFocusedHash(undefined);
+              },
+              amount,
+            })
+          }
+        />
+      )}
+      {tab === "history" && <TransferHistory focusedHash={focusedHash} />}
     </div>
   );
 };
