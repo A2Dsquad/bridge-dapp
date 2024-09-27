@@ -4,6 +4,7 @@ export { default as IconArrowUp } from './ArrowUp';
 export { default as IconBgLogo } from './BgLogo';
 export { default as IconCamera } from './Camera';
 export { default as IconChat } from './Chat';
+export { default as IconCheckCircle } from './CheckCircle';
 export { default as IconChevronDown } from './ChevronDown';
 export { default as IconChevronRight } from './ChevronRight';
 export { default as IconClose } from './Close';
