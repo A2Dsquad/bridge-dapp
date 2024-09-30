@@ -24,13 +24,13 @@ function Header() {
     <header className="text-white bg-black/30">
       <div className="p-4">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="min-w-[300px] flex">
+          <div className="flex">
             <Link to="/" className="flex items-center space-x-2">
               <IconLogo className="h-10 w-10 text-primary" />
               <span className="font-bold text-lg">Sentra Bridge</span>
             </Link>
           </div>
-          <div className="flex items-center min-w-[300px]">
+          <div className="flex items-center">
             {!isConnected && (
               <Button
                 variant="secondary"
