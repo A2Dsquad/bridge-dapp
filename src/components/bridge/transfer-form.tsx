@@ -9,26 +9,25 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import type { ReadMinterOrderDto } from "@/services/models";
+import { useMinterControllerCreateOrder } from "@/services/queries";
+import { ZKBridgeAbi, ZKBridgeAddresses } from "@/smart-contracts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { delay } from "es-toolkit";
 import { useForm, useWatch } from "react-hook-form";
+import { parseEther } from "viem";
 import { useAccount, useBalance, useWriteContract } from "wagmi";
 import * as z from "zod";
 import { Button as MovingBorder } from "../aceternity/moving-border";
 import { IconAptos, IconArrow, IconEthereum } from "../icons";
 import { Input } from "../ui/input";
-import { useMinterControllerCreateOrder } from "@/services/queries";
-import { ZKBridgeAbi, ZKBridgeAddresses } from "@/smart-contracts";
-import { parseEther } from "viem";
-import { delay } from "es-toolkit";
 
 const formSchema = z.object({
   amount: z.coerce.number({ message: "Amount must be a number" }).gt(0, "Amount is required"),
   recipient: z.string().min(1, "Recipient address is required"),
 });
 
-export function TransferForm({
-  onSuccess,
-}: { onSuccess: (details: { srcTxHash: string; amount: number }) => void }) {
+export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrderDto) => void }) {
   const { isConnected, address, chainId } = useAccount();
   const { data: ethBalance } = useBalance({ address });
 
@@ -66,7 +65,7 @@ export function TransferForm({
     await delay(15_000);
     reset();
     if (srcTxHash) {
-      await createOrder({
+      const res = await createOrder({
         data: {
           recipient,
           sender: address,
@@ -75,7 +74,7 @@ export function TransferForm({
         },
       });
 
-      onSuccess({ srcTxHash, amount });
+      onSuccess(res.data);
     }
   }
 

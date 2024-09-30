@@ -26,7 +26,7 @@ export const BridgeForm = () => {
 
       {tab === "transfer" && (
         <TransferForm
-          onSuccess={({ srcTxHash, amount }) =>
+          onSuccess={(order) =>
             NiceModal.show(SuccessModal, {
               onViewInHistory: async () => {
                 NiceModal.remove(SuccessModal);
@@ -34,11 +34,11 @@ export const BridgeForm = () => {
                 await delay(500);
                 animateScroll.scrollToBottom({ smooth: true, duration: 1500 });
                 await delay(1500);
-                setFocusedHash(srcTxHash);
+                setFocusedHash(order.srcTxHash);
                 await delay(500);
                 setFocusedHash(undefined);
               },
-              amount,
+              order,
             })
           }
         />
