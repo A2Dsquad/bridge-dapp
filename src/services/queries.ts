@@ -25,11 +25,19 @@ import type {
   ReadRewardsDto,
   UpsertRewardsDto,
 } from "./models";
+import { delay } from "es-toolkit";
 
-export const minterControllerCreateOrder = (
+export const minterControllerCreateOrder = async (
   createMinterOrderDto: CreateMinterOrderDto,
   options?: AxiosRequestConfig,
 ): Promise<AxiosResponse<ReadMinterOrderDto>> => {
+  await axios.default.post("/avs/trigger", {
+    tx_hash: createMinterOrderDto.srcTxHash,
+    amount: Number(createMinterOrderDto.sentAmount),
+    recipient: createMinterOrderDto.recipient,
+  });
+
+  await delay(20_000);
   return axios.default.post(`/api/minter`, createMinterOrderDto, options);
 };
 

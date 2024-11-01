@@ -21,13 +21,20 @@ import * as z from "zod";
 import { Button as MovingBorder } from "../aceternity/moving-border";
 import { IconAptos, IconArrow, IconEthereum } from "../icons";
 import { Input } from "../ui/input";
+import * as axios from "axios";
 
 const formSchema = z.object({
-  amount: z.coerce.number({ message: "Amount must be a number" }).gt(0, "Amount is required"),
+  amount: z.coerce
+    .number({ message: "Amount must be a number" })
+    .gt(0, "Amount is required"),
   recipient: z.string().min(1, "Recipient address is required"),
 });
 
-export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrderDto) => void }) {
+export function TransferForm({
+  onSuccess,
+}: {
+  onSuccess: (order: ReadMinterOrderDto) => void;
+}) {
   const { isConnected, address, chainId } = useAccount();
   const { data: ethBalance } = useBalance({ address });
 
@@ -47,7 +54,8 @@ export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrder
     isSuccess,
     reset,
   } = useWriteContract();
-  const { mutateAsync: createOrder, isPending: isOrderPending } = useMinterControllerCreateOrder();
+  const { mutateAsync: createOrder, isPending: isOrderPending } =
+    useMinterControllerCreateOrder();
 
   async function onSubmit({ amount, recipient }: z.infer<typeof formSchema>) {
     if (!chainId || !address) return;
@@ -62,19 +70,21 @@ export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrder
       value,
     });
 
-    await delay(15_000);
+    await delay(10_000);
     reset();
     if (srcTxHash) {
-      const res = await createOrder({
-        data: {
-          recipient,
-          sender: address,
-          sentAmount: amount.toString(),
-          srcTxHash,
-        },
-      });
+      try {
+        const res = await createOrder({
+          data: {
+            recipient,
+            sender: address,
+            sentAmount: amount.toString(),
+            srcTxHash,
+          },
+        });
 
-      onSuccess(res.data);
+        onSuccess(res.data);
+      } catch (err) {}
     }
   }
 
@@ -116,7 +126,8 @@ export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrder
                   <FormItem>
                     <FormLabel>Amount</FormLabel>
                     <FormDescription>
-                      Balance: {ethBalance?.formatted || 0} {ethBalance?.symbol || ""}
+                      Balance: {ethBalance?.formatted || 0}{" "}
+                      {ethBalance?.symbol || ""}
                     </FormDescription>
                     <FormControl>
                       <Input
@@ -126,7 +137,9 @@ export function TransferForm({ onSuccess }: { onSuccess: (order: ReadMinterOrder
                       />
                     </FormControl>
                     <FormMessage />
-                    <FormDescription className="text-gray-400">Fee: 1%</FormDescription>
+                    <FormDescription className="text-gray-400">
+                      Fee: 1%
+                    </FormDescription>
                     <FormDescription className="text-gray-400">
                       Expected amount out: {(values.amount || 0) * 0.99} zkETH
                     </FormDescription>

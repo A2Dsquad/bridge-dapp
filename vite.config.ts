@@ -47,6 +47,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
+      "/avs": {
+        target: "http://37.27.56.233:1317",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/avs/, ""),
+      }
     },
   },
 });
